@@ -1,0 +1,11 @@
+.venv
+.env
+postgres_data
+uv.lock
+*__pycache__
+*/__pycache__
+minio
+evolution_instances
+redis_data
+redis_data/*
+rabbitmq_data/

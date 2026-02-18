@@ -1,0 +1,120 @@
+services:
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    command: server --console-address ":9001" /data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - ./minio/data:/data:z
+      - ./minio/config:/root/.minio:z
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio-setup:
+    image: minio/mc:latest
+    network_mode: "service:minio"
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      sh -c "
+      mc alias set local http://localhost:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD} &&
+      mc mb -p local/${S3_BUCKET:-app-bucket} || true &&
+      mc anonymous set download local/${S3_BUCKET:-app-bucket} || true
+      "
+    restart: "no"
+
+  postgres:
+    user: "1000:1000"
+    image: postgres:18.0-alpine
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: sampledb
+    volumes:
+      - ./postgres_data:/var/lib/postgresql:z
+      - ./postgres_init:/docker-entrypoint-initdb.d:z
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: redis_dev
+    restart: unless-stopped
+    command: [
+      "redis-server",
+      "--appendonly", "yes"
+    ]
+    ports:
+      - "6380:6379"
+    volumes:
+      - ./redis_data:/data:z
+
+  evolution_api:
+    container_name: evolution_api
+    image: evoapicloud/evolution-api:latest
+    restart: unless-stopped
+    depends_on:
+      - redis
+      - postgres
+    ports:
+      - 8080:8080
+    volumes:
+      - ./evolution_instances:/evolution/instances:z
+    # env_file:
+    #   - ./.e.env
+    environment:
+      SERVER_TYPE: http
+      SERVER_PORT: 8080
+      SERVER_URL: http://localhost:8080
+      CORS_ORIGIN: "*"
+      CORS_METHODS: GET,POST,PUT,DELETE
+      CORS_CREDENTIALS: true
+      DATABASE_PROVIDER: postgresql
+      CACHE_REDIS_ENABLED: true
+      CACHE_REDIS_URI: redis://redis:6379/6
+      DATABASE_CONNECTION_URI: 'postgresql://evo_user:evo_pass@postgres:5432/evo_db?schema=public'
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: rabbitmq_dev
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "127.0.0.1:15672:15672"
+    volumes:
+      - ./rabbitmq_data:/var/lib/rabbitmq:z
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+  frontend:
+    container_name: evolution_frontend
+    image: evoapicloud/evolution-manager:latest
+    entrypoint: /bin/sh
+    command: >
+      -c "
+      if [ -f /etc/nginx/conf.d/nginx.conf ]; then
+        sed -i 's/ must-revalidate//g' /etc/nginx/conf.d/nginx.conf;
+      fi &&
+      nginx -g 'daemon off;'
+      "
+    ports:
+      - "3000:80"
+    restart: unless-stopped
+

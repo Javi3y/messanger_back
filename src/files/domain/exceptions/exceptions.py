@@ -1,0 +1,13 @@
+from src.base.exceptions import NotFoundException
+
+
+class FileServiceError(Exception): ...
+
+
+class NotFoundError(NotFoundException, FileServiceError): ...
+
+
+class ConflictError(FileServiceError): ...
+
+
+class StorageConfigError(RuntimeError): ...

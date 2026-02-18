@@ -1,0 +1,3 @@
+CREATE USER evo_user WITH PASSWORD 'evo_pass';
+CREATE DATABASE evo_db OWNER evo_user;
+GRANT ALL PRIVILEGES ON DATABASE evo_db TO evo_user;
