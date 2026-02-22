@@ -107,8 +107,7 @@ These are the "experiments" this repo currently contains:
   - dedup/aggregate metadata kept on outbox rows
 
 - **Two message-generation paths**
-  - legacy CSV worker path for simple request files
-  - newer generic import pipeline (stage -> process) with typed configs
+  - generic import pipeline (stage -> process) with typed configs
 
 - **Import framework as reusable engine**
   - import registry maps `import_type` to config + handler

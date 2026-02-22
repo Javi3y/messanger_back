@@ -51,7 +51,6 @@ class V1MessageRequestResponse(BaseModel):
     title: str | None = None
     default_text: str | None = None
     sending_time: datetime | None = None
-    generated: bool
 
     @field_validator("user", "csv_file", "attachment_file", mode="before")
     @classmethod
