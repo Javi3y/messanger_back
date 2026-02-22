@@ -4,7 +4,6 @@ from src.base.domain.entity import BaseEntity
 
 
 class MessagingRequest(BaseEntity):
-
     repo_attr = "message_request_repo"
 
     user_id: int
@@ -13,7 +12,6 @@ class MessagingRequest(BaseEntity):
     request_file_id: int | None = None
     attachment_file_id: int | None = None
     sending_time: datetime
-    generated: bool = False
     default_text: str | None = None
 
     def __init__(
@@ -26,7 +24,6 @@ class MessagingRequest(BaseEntity):
         title: str | None = None,
         sending_time: datetime | None = None,
         default_text: str | None = None,
-        generated: bool = False,
         id: int | None = None,
         deleted_at: datetime | None = None,
     ) -> None:
@@ -38,4 +35,3 @@ class MessagingRequest(BaseEntity):
         self.attachment_file_id = attachment_file_id
         self.sending_time = sending_time or datetime.now(UTC)
         self.default_text = default_text
-        self.generated = generated

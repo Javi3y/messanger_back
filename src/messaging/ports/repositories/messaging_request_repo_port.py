@@ -5,7 +5,6 @@ from src.messaging.domain.entities.messaging_request import MessagingRequest
 
 
 class MessagingRequestRepositoryPort(AbstractRepository, ABC):
-
     @abstractmethod
     async def add(
         self,
@@ -53,17 +52,4 @@ class MessagingRequestRepositoryPort(AbstractRepository, ABC):
         include_deleted: bool = False,
         **kwargs,
     ) -> MessagingRequest | None:
-        raise NotImplementedError
-
-    @abstractmethod
-    async def get_not_generated(
-        self,
-        *,
-        limit: int = 10,
-        offset: int = 0,
-        include_deleted: bool = False,
-        lock: bool = False,
-        skip_locked: bool = False,
-        **kwargs,
-    ):
         raise NotImplementedError

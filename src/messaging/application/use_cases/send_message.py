@@ -70,7 +70,6 @@ async def send_message_use_case(
         attachment_file_id=file_id,
         title=None,
         default_text=text,
-        generated=True,
     )
     message_request = await uow.message_request_repo.add(entity=message_request)
     await uow.flush()

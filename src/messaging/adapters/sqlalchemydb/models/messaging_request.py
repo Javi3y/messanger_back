@@ -1,5 +1,4 @@
 from sqlalchemy import (
-    Boolean,
     Column,
     DateTime,
     ForeignKey,
@@ -25,7 +24,6 @@ class MessagingRequestModel(Base, EntityModelMixin):
         "request_file_id",
         "attachment_file_id",
         "sending_time",
-        "generated",
         "default_text",
     ]
 
@@ -62,8 +60,6 @@ class MessagingRequestModel(Base, EntityModelMixin):
     title = Column(String(255), nullable=True)
 
     sending_time = Column(DateTime(timezone=True), nullable=False)
-
-    generated = Column(Boolean, nullable=False, default=False)
 
     default_text = Column(Text, nullable=True)
 

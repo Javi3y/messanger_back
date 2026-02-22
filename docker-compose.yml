@@ -189,17 +189,6 @@ services:
         "--batch-size", "${DISPATCH_OUTBOX_EVENTS_BATCH_SIZE:-50}"
       ]
 
-  worker_generate_messages_from_requests_csv:
-    <<: *app_common
-    container_name: worker_generate_messages_from_requests_csv
-    command:
-      [
-        "uv", "run", "python", "-m", "app.workers",
-        "--job", "generate_messages_from_requests_csv",
-        "--interval", "${GENERATE_MESSAGES_FROM_REQUESTS_CSV_INTERVAL_SECONDS:-10}",
-        "--batch-size", "${GENERATE_MESSAGES_FROM_REQUESTS_CSV_BATCH_SIZE:-5}"
-      ]
-
   rabbitmq_consumer:
     <<: *app_common
     container_name: rabbitmq_consumer

@@ -204,14 +204,12 @@ Run workers separately as needed:
 
 ```bash
 uv run python -m app.workers --job dispatch_outbox_events
-uv run python -m app.workers --job generate_messages_from_requests_csv
 ```
 
 Workers also support one-shot execution via `--once`, so they can run as scheduled jobs (for example Kubernetes CronJobs) instead of only long-running loops:
 
 ```bash
 uv run python -m app.workers --job dispatch_outbox_events --once
-uv run python -m app.workers --job generate_messages_from_requests_csv --once
 ```
 
 Run broker consumer (only when broker is enabled, i.e. `broker_driver` is not `none`):

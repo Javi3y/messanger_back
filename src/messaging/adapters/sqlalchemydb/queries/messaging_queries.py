@@ -20,7 +20,6 @@ from src.files.domain.dtos.file_dto import FileDTO
 
 
 class SqlalchemyMessagingQueries(AsyncSqlalchemyQueries, MessagingQueriesPort):
-
     # -----------------------------------------------------------------
     # DTO Mappers
     # -----------------------------------------------------------------
@@ -85,7 +84,6 @@ class SqlalchemyMessagingQueries(AsyncSqlalchemyQueries, MessagingQueriesPort):
             title=request_model.title,
             default_text=request_model.default_text,
             sending_time=request_model.sending_time,
-            generated=request_model.generated,
         )
 
     def _to_user_dto(self, u: BaseUserModel) -> UserDTO:

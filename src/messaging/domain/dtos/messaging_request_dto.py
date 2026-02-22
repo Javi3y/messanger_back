@@ -22,7 +22,6 @@ class MessageRequestDTO(BaseDTO):
         title: str | None = None,
         default_text: str | None = None,
         sending_time: datetime | None = None,
-        generated: bool = False,
     ):
         self.id = id
         self.user = user  # Nested UserDTO
@@ -32,4 +31,3 @@ class MessageRequestDTO(BaseDTO):
         self.title = title
         self.default_text = default_text
         self.sending_time = sending_time
-        self.generated = generated

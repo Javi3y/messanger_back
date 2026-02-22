@@ -44,7 +44,6 @@ async def create_message_request_import_use_case(
         title=title,
         sending_time=default_sending_time,
         default_text=default_text,
-        generated=True,  # IMPORTANT: prevents the legacy CSV worker from duplicating work
     )
     req = await uow.message_request_repo.add(entity=req)
     await uow.flush()

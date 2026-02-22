@@ -1,20 +1,14 @@
-from datetime import datetime
-
 from fastapi import APIRouter, Depends
 from dependency_injector.wiring import Provide, inject
 
-from app.deps.providers import get_uow, get_file_service
+from app.deps.providers import get_uow
 from app.v1.messaging.schemas import v1_requests as rqm
 from app.v1.messaging.schemas import v1_responses as rsm
 from app.v1.messaging.schemas.v1_responses import V1MessageRequestResponse
 from app.v1.users.deps.get_current_user import get_current_user
 from app.container import ApplicationContainer
 from src.base.ports.unit_of_work import AsyncUnitOfWork
-from src.files.ports.services.file_service import FileServicePort
 from src.messaging.application.use_cases.send_message import send_message_use_case
-from src.messaging.application.use_cases.create_messaging_request_from_csv import (
-    create_messaging_request_from_csv_use_case,
-)
 from src.messaging.application.use_cases.get_message_request import (
     get_message_request_use_case,
 )
@@ -49,39 +43,6 @@ async def message(
         await uow.commit()
 
         return {"message_request_id": message_request_id, "message_id": message_id}
-
-
-@router.post("/message-requests/csv")
-async def create_message_request_csv(
-    session_id: int,
-    file_id: int,
-    title: str | None = None,
-    default_text: str | None = None,
-    default_sending_time: datetime | None = None,
-    attachment_file_id: int | None = None,
-    uow: AsyncUnitOfWork = Depends(get_uow),
-    file_service: FileServicePort = Depends(get_file_service),
-    user: BaseUser = Depends(get_current_user),
-):
-    async with uow:
-        req = await create_messaging_request_from_csv_use_case(
-            session_id=session_id,
-            file_id=file_id,
-            title=title,
-            default_text=default_text,
-            default_sending_time=default_sending_time,
-            attachment_file_id=attachment_file_id,
-            user_id=user.id,
-            uow=uow,
-            file_service=file_service,
-        )
-        await uow.commit()
-
-    return {
-        "id": req.id,
-        "generated": req.generated,
-        "request_file_id": req.request_file_id,
-    }
 
 
 @router.get("/message-requests/{message_request_id}")

@@ -54,6 +54,4 @@ class V1ImportMessageRequest(AbstractBaseModel):
 
     ttl_seconds: int = 3600 * 24
 
-    config: MessageRequestImportConfig = Field(
-        default_factory=MessageRequestImportConfig
-    )
+    config: MessageRequestImportConfig = MessageRequestImportConfig()
