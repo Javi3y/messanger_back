@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.base.adapters.sqlalchemydb.repository import AsyncSqlalchemyRepository
@@ -65,5 +65,29 @@ class SqlalchemyFileRepository(
         )
         if not include_deleted:
             stmt = stmt.where(FileModel.deleted_at.is_(None))
+        res = await self.session.execute(stmt)
+        return [m.to_entity() for m in res.scalars().all()]
+
+    async def list_visible_for_user(
+        self,
+        *,
+        user_id: int,
+        include_public: bool = False,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> list[File]:
+        visibility_clause = (
+            or_(FileModel.user_id == user_id, FileModel.user_id.is_(None))
+            if include_public
+            else FileModel.user_id == user_id
+        )
+
+        stmt = (
+            select(FileModel)
+            .where(FileModel.deleted_at.is_(None), visibility_clause)
+            .order_by(FileModel.id.desc())
+            .offset(offset)
+            .limit(limit)
+        )
         res = await self.session.execute(stmt)
         return [m.to_entity() for m in res.scalars().all()]

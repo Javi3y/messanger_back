@@ -93,6 +93,7 @@ async def start_qr_session_use_case(
             "session_id": str(session.id),
             "messenger_type": messenger_type.value,
         },
+        user_id=user_id,
     )
     qr_file = await uow.file_repo.add(entity=qr_file)
 

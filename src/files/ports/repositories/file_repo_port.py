@@ -4,7 +4,6 @@ from src.files.domain.entities.file import File
 
 
 class FileRepositoryPort(AbstractRepository, ABC):
-
     @abstractmethod
     async def add(
         self,
@@ -84,5 +83,16 @@ class FileRepositoryPort(AbstractRepository, ABC):
         offset: int = 0,
         include_deleted: bool = False,
         **kwargs,
+    ) -> list[File]:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def list_visible_for_user(
+        self,
+        *,
+        user_id: int,
+        include_public: bool = False,
+        limit: int = 50,
+        offset: int = 0,
     ) -> list[File]:
         raise NotImplementedError

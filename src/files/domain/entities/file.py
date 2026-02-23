@@ -13,6 +13,7 @@ class File(BaseEntity):
     created_at: datetime | None = None
     modified_at: datetime | None = None
     meta: dict[str, str] | None = None
+    user_id: int | None = None
 
     download_url: str | None = None
 
@@ -27,6 +28,7 @@ class File(BaseEntity):
         created_at: datetime | None = None,
         modified_at: datetime | None = None,
         meta: dict[str, str] | None = None,
+        user_id: int | None = None,
         download_url: str | None = None,
         id: int | None = None,
         deleted_at: datetime | None = None,
@@ -40,4 +42,5 @@ class File(BaseEntity):
         self.created_at = created_at
         self.modified_at = modified_at
         self.meta = meta
+        self.user_id = user_id
         self.download_url = download_url

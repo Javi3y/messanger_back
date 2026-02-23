@@ -1,4 +1,13 @@
-from sqlalchemy import Column, Integer, String, DateTime, BigInteger, JSON, Index
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    DateTime,
+    BigInteger,
+    JSON,
+    Index,
+    ForeignKey,
+)
 from src.base.adapters.sqlalchemydb.database import Base
 from src.base.adapters.sqlalchemydb.mixins import EntityModelMixin
 from src.files.domain.entities.file import File
@@ -17,6 +26,7 @@ class FileModel(Base, EntityModelMixin):
         "created_at",
         "modified_at",
         "meta",
+        "user_id",
     ]
 
     id = Column(Integer, primary_key=True, index=True)
@@ -28,10 +38,14 @@ class FileModel(Base, EntityModelMixin):
     created_at = Column(DateTime(timezone=True), nullable=True)
     modified_at = Column(DateTime(timezone=True), nullable=True)
     meta = Column(JSON, nullable=True)
+    user_id = Column(
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
     deleted_at = Column(DateTime(timezone=True), nullable=True)
 
     __table_args__ = (
         Index("ix_files_uri", "uri", unique=True),
         Index("ix_files_etag", "etag"),
         Index("ix_files_name", "name"),
+        Index("ix_files_user_id", "user_id"),
     )

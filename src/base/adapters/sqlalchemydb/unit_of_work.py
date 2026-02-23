@@ -8,6 +8,7 @@ from src.base.ports.repositories.cache_repository import AbstractCacheRepository
 from src.messaging.adapters.sqlalchemydb.queries.messaging_queries import (
     SqlalchemyMessagingQueries,
 )
+from src.files.adapters.sqlalchemydb.queries.file_queries import SqlalchemyFileQueries
 
 import src.users.adapters.sqlalchemydb.repositories as user_repos
 import src.files.adapters.sqlalchemydb.repositories as file_repos
@@ -55,6 +56,7 @@ class AsyncSqlalchemyUnitOfWork(AsyncUnitOfWork):
         )
 
         # messaging queries (read-side)
+        self.file_queries = SqlalchemyFileQueries(self.session)
         self.messaging_queries = SqlalchemyMessagingQueries(self.session)
 
     async def commit(self) -> None:

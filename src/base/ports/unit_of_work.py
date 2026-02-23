@@ -9,6 +9,7 @@ from src.messaging.ports.queries.messaging_queries_port import (
 
 import src.users.ports.repositories as user_repos
 import src.files.ports.repositories as file_repos
+import src.files.ports.queries as file_queries
 import src.messaging.ports.repositories as messaging_repos
 from src.base.ports.repositories.outbox_event_repo_port import OutboxEventRepositoryPort
 
@@ -33,6 +34,7 @@ class AsyncUnitOfWork(ABC):
         self.outbox_event_repo: OutboxEventRepositoryPort
 
         # queries (types)
+        self.file_queries: file_queries.FileQueriesPort
         self.messaging_queries: MessagingQueriesPort
 
     async def __aenter__(self):
