@@ -28,6 +28,11 @@ class V1SessionResponse(BaseModel):
     user_id: int
 
 
+class V1StartOtpSessionResponse(BaseModel):
+    session_id: int
+    message: str
+
+
 class V1QrCodeResponse(BaseModel):
     """QR code response."""
 

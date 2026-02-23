@@ -18,6 +18,7 @@ from src.files.ports.services.file_service import FileServicePort
 from app.v1.messaging.schemas import v1_requests as rqm
 from app.v1.messaging.schemas.v1_responses import (
     V1MessengerDescriptorResponse,
+    V1StartOtpSessionResponse,
     V1SessionResponse,
 )
 from app.v1.users.deps.get_current_user import get_current_user
@@ -48,14 +49,14 @@ async def list_messengers(
     ]
 
 
-@router.post("/otp", response_model=dict)
+@router.post("/otp", response_model=V1StartOtpSessionResponse)
 async def start_otp_session(
     request: rqm.V1StartOtpSessionRequest,
     uow: AsyncUnitOfWork = Depends(get_uow),
     user: BaseUser = Depends(get_current_user),
     registry: MessengerRegistry = Depends(get_messenger_registry),
     cache_repo: AbstractCacheRepository = Depends(get_cache_repo),
-) -> dict:
+) -> V1StartOtpSessionResponse:
     async with uow:
         res = await start_otp_session_use_case(
             title=request.title,
@@ -67,7 +68,7 @@ async def start_otp_session(
             cache_repo=cache_repo,
         )
         await uow.commit()
-        return res
+        return V1StartOtpSessionResponse(**res.dump())
 
 
 @router.post("/qr", response_model=dict)
