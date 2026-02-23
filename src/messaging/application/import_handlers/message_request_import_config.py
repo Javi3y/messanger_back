@@ -8,10 +8,13 @@ from src.importing.domain.enums.unknown_columns_policy import UnknownColumnsPoli
 
 class MessageRequestImportConfig(BaseImportConfig):
     import_type: ClassVar[str] = "message_request"
+    unknown_columns_policy: ClassVar[UnknownColumnsPolicy] = UnknownColumnsPolicy.error
 
     # optional: turn on generic constraints from the base
     allowed_required_keys: ClassVar[set[str] | None] = {"phone_number"}
-    required_must_include: ClassVar[set[str]] = frozenset({"phone_number"})
+    required_must_include: ClassVar[set[str] | frozenset[str]] = frozenset(
+        {"phone_number"}
+    )
     allowed_optional_keys: ClassVar[set[str] | None] = {
         "username",
         "user_id",
@@ -33,6 +36,5 @@ class MessageRequestImportConfig(BaseImportConfig):
 
     extras: dict[str, str] = Field(default_factory=dict)
 
-    unknown_columns_policy: UnknownColumnsPolicy = UnknownColumnsPolicy.error
     stop_on_row_error: bool = False
     max_errors: int = 500

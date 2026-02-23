@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import Field
+from pydantic import Field, ConfigDict
 
 from app.schemas.base import AbstractBaseModel
 from src.messaging.application.import_handlers.message_request_import_config import (
@@ -45,6 +45,8 @@ class V1MessageRequest(AbstractBaseModel):
 
 
 class V1ImportMessageRequest(AbstractBaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     session_id: int
     file_id: int
     title: str | None = None

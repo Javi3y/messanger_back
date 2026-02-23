@@ -1,12 +1,16 @@
 from typing import ClassVar
 
-from pydantic import BaseModel, Field, ConfigDict, field_validator, model_validator
-
+from pydantic import (
+    BaseModel,
+    Field,
+    ConfigDict,
+    field_validator,
+    model_validator,
+)
 from src.importing.domain.enums.unknown_columns_policy import UnknownColumnsPolicy
 
 
 class BaseImportConfig(BaseModel):
-
     # reject unknown fields in the config payload
     model_config = ConfigDict(extra="forbid", validate_assignment=True)
 
@@ -19,17 +23,15 @@ class BaseImportConfig(BaseModel):
     # variable_name -> file_header (for future templating)
     extras: dict[str, str] = Field(default_factory=dict)
 
-    # strict by default
-    unknown_columns_policy: UnknownColumnsPolicy = UnknownColumnsPolicy.error
-
     # row error behavior
     stop_on_row_error: bool = False
     max_errors: int = Field(default=500, ge=1)
 
     # --- generic constraints you can optionally set in subclasses ---
+    unknown_columns_policy: ClassVar[UnknownColumnsPolicy] = UnknownColumnsPolicy.error
     allowed_required_keys: ClassVar[set[str] | None] = None
     allowed_optional_keys: ClassVar[set[str] | None] = None
-    required_must_include: ClassVar[set[str]] = frozenset()
+    required_must_include: ClassVar[set[str] | frozenset[str]] = frozenset()
 
     @field_validator("required", "optional", "extras", mode="before")
     @classmethod
@@ -99,4 +101,4 @@ class BaseImportConfig(BaseModel):
 
     def validate_basic(self) -> None:
         # compatibility with your old API
-        self._validate_basic()
+        type(self).model_validate(self.model_dump())

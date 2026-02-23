@@ -2,7 +2,7 @@ from datetime import datetime, UTC
 
 from src.base.application.services.outbox_service import OutboxService
 from src.base.exceptions import BadRequestException
-from src.files.ports.services.upload_port import UploadedFilePort
+from src.files.ports.services.file_service import FileServicePort
 from src.importing.application.registry.import_registry import ImportRegistry
 from src.importing.application.outbox.events.bulk_import_stage_v1 import (
     BulkImportStageV1,
@@ -26,7 +26,7 @@ async def handle_bulk_import_stage_v1(
     *,
     uow,
     event: BulkImportStageV1,
-    file_service: UploadedFilePort,
+    file_service: FileServicePort,
     tabular_reader: TabularReaderPort,
     import_staging_repo: ImportStagingRepositoryPort,
     import_registry: ImportRegistry,
@@ -45,6 +45,7 @@ async def handle_bulk_import_stage_v1(
         return
 
     config = config_cls(**event.config)
+    unknown_columns_policy = config.unknown_columns_policy
     try:
         config.validate_basic()
     except Exception as e:
@@ -78,7 +79,7 @@ async def handle_bulk_import_stage_v1(
         )
         return
 
-    content = await file_service.read(f.uri)
+    content = await file_service.read(uri=f.uri)
     doc = tabular_reader.read(
         filename=f.name,
         content_type=f.content_type,
@@ -120,7 +121,7 @@ async def handle_bulk_import_stage_v1(
         )
         return
 
-    if unknown and config.unknown_columns_policy == UnknownColumnsPolicy.error:
+    if unknown and unknown_columns_policy == UnknownColumnsPolicy.error:
         await import_staging_repo.update_meta(
             job_key=event.job_key,
             updates={

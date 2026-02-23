@@ -73,6 +73,7 @@ class MessageRequestImportHandler(ImportHandlerPort):
         ttl_seconds: int,
     ) -> dict[str, Any]:
         assert isinstance(config, MessageRequestImportConfig)
+        unknown_columns_policy = config.unknown_columns_policy
 
         headers = doc.headers
         header_map = {_canon(h): h for h in headers}
@@ -132,8 +133,7 @@ class MessageRequestImportHandler(ImportHandlerPort):
             for var, header in config.extras.items():
                 extras[var] = _get(raw, header)
 
-            # capture unknown headers if requested
-            if config.unknown_columns_policy == UnknownColumnsPolicy.capture:
+            if unknown_columns_policy == UnknownColumnsPolicy.capture:
                 for h, v in raw.items():
                     if _canon(h) in declared_canon:
                         continue
