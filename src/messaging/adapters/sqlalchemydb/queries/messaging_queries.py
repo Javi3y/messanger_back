@@ -55,7 +55,8 @@ class SqlalchemyMessagingQueries(AsyncSqlalchemyQueries, MessagingQueriesPort):
                 created_at=csv_file_row.created_at,
                 modified_at=csv_file_row.modified_at,
                 meta=csv_file_row.meta,
-                user_id=csv_file_row.user_id,
+                owner_id=csv_file_row.user_id,
+                is_public=csv_file_row.user_id is None,
             )
             if csv_file_row
             else None
@@ -71,7 +72,8 @@ class SqlalchemyMessagingQueries(AsyncSqlalchemyQueries, MessagingQueriesPort):
                 created_at=attachment_file_row.created_at,
                 modified_at=attachment_file_row.modified_at,
                 meta=attachment_file_row.meta,
-                user_id=attachment_file_row.user_id,
+                owner_id=attachment_file_row.user_id,
+                is_public=attachment_file_row.user_id is None,
             )
             if attachment_file_row
             else None
@@ -109,7 +111,8 @@ class SqlalchemyMessagingQueries(AsyncSqlalchemyQueries, MessagingQueriesPort):
             created_at=f.created_at,
             modified_at=f.modified_at,
             meta=f.meta,
-            user_id=f.user_id,
+            owner_id=f.user_id,
+            is_public=f.user_id is None,
         )
 
     # -----------------------------------------------------------------

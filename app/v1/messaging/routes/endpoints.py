@@ -7,6 +7,7 @@ from app.v1.messaging.schemas import v1_responses as rsm
 from app.v1.messaging.schemas.v1_responses import V1MessageRequestResponse
 from app.v1.users.deps.get_current_user import get_current_user
 from app.container import ApplicationContainer
+from src.base.exceptions import BadRequestException
 from src.base.ports.unit_of_work import AsyncUnitOfWork
 from src.messaging.application.use_cases.send_message import send_message_use_case
 from src.messaging.application.use_cases.get_message_request import (
@@ -23,26 +24,29 @@ from src.users.domain.entities.base_user import BaseUser
 router = APIRouter(prefix="", tags=["messages"])
 
 
-@router.post("/message")
+@router.post("/message", response_model=V1MessageRequestResponse)
 async def message(
     request: rqm.V1MessageRequest,
     user: BaseUser = Depends(get_current_user),
     uow: AsyncUnitOfWork = Depends(get_uow),
-):
+) -> V1MessageRequestResponse:
+    if user.id is None:
+        raise BadRequestException(detail="User id is required")
+
     async with uow:
-        message_request_id, message_id = await send_message_use_case(
+        dto = await send_message_use_case(
             session_id=request.session_id,
             phone_number=request.contact.phone_number,
             username=request.contact.username,
             user_id=request.contact.id,
             text=request.text,
             file_id=request.file_id,
-            current_user_id=user.id,
+            current_user=user,
             uow=uow,
         )
         await uow.commit()
 
-        return {"message_request_id": message_request_id, "message_id": message_id}
+        return rsm.V1MessageRequestResponse(**dto.dump())
 
 
 @router.get("/message-requests/{message_request_id}")
@@ -70,10 +74,14 @@ async def create_message_request_import(
         Provide[ApplicationContainer.import_staging_repo]
     ),
 ):
+    if user.id is None:
+        raise BadRequestException(detail="User id is required")
+    current_user_id = int(user.id)
+
     async with uow:
         result = await create_message_request_import_use_case(
             uow=uow,
-            user_id=user.id,
+            user_id=current_user_id,
             session_id=request.session_id,
             file_id=request.file_id,
             title=request.title,
