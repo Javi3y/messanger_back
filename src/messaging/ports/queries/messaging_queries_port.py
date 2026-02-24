@@ -30,3 +30,11 @@ class MessagingQueriesPort(AbstractQueries, ABC):
         session_id: int,
     ) -> SessionDTO | None:
         raise NotImplementedError
+
+    @abstractmethod
+    async def get_message_by_id(
+        self,
+        *,
+        message_id: int,
+    ) -> MessageDTO | None:
+        raise NotImplementedError

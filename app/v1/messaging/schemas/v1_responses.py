@@ -3,6 +3,7 @@ from datetime import datetime
 from app.schemas.base import AbstractBaseModel
 from app.v1.files.schemas.v1_responses import V1FileResponse
 from app.v1.users.schemas.v1_responses import V1BaseUserResponse
+from src.messaging.domain.enums.message_status import MessageStatus
 
 
 class V1MessengerDescriptorResponse(AbstractBaseModel):
@@ -20,6 +21,18 @@ class V1SessionResponse(AbstractBaseModel):
     session_type: str
     is_active: bool
     user: V1BaseUserResponse
+
+
+class V1MessageResponse(AbstractBaseModel):
+    id: int
+    message_request_id: int
+    text: str
+    phone_number: str | None = None
+    username: str | None = None
+    sending_time: datetime | None = None
+    sent_time: datetime | None = None
+    status: MessageStatus
+    error_message: str | None = None
 
 
 class V1StartOtpSessionResponse(AbstractBaseModel):
@@ -50,3 +63,8 @@ class V1MessageRequestResponse(AbstractBaseModel):
     title: str | None = None
     default_text: str | None = None
     sending_time: datetime | None = None
+
+
+class V1SendMessageResponse(AbstractBaseModel):
+    message: V1MessageResponse
+    message_request: V1MessageRequestResponse

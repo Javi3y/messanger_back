@@ -7,6 +7,7 @@ from app.v1.messaging.schemas import v1_responses as rsm
 from app.v1.messaging.schemas.v1_responses import (
     V1CreateMessageRequestImportResponse,
     V1MessageRequestResponse,
+    V1SendMessageResponse,
 )
 from app.v1.users.deps.get_current_user import get_current_user
 from app.container import ApplicationContainer
@@ -27,12 +28,12 @@ from src.users.domain.entities.base_user import BaseUser
 router = APIRouter(prefix="", tags=["messages"])
 
 
-@router.post("/message", response_model=V1MessageRequestResponse)
+@router.post("/message", response_model=V1SendMessageResponse)
 async def message(
     request: rqm.V1MessageRequest,
     user: BaseUser = Depends(get_current_user),
     uow: AsyncUnitOfWork = Depends(get_uow),
-) -> V1MessageRequestResponse:
+) -> V1SendMessageResponse:
     if user.id is None:
         raise BadRequestException(detail="User id is required")
 
@@ -49,7 +50,7 @@ async def message(
         )
         await uow.commit()
 
-        return rsm.V1MessageRequestResponse(**dto.dump())
+        return rsm.V1SendMessageResponse(**dto.dump())
 
 
 @router.get("/message-requests/{message_request_id}")

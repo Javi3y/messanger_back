@@ -7,6 +7,7 @@ from src.messaging.application.outbox.events.request_ready_to_send_v1 import (
     MessageRequestReadyToSendV1,
 )
 from src.messaging.domain.dtos.messaging_request_dto import MessageRequestDTO
+from src.messaging.domain.dtos.send_message_dto import SendMessageDTO
 from src.messaging.domain.entities.message import Message, MessageStatus
 from src.messaging.domain.entities.messaging_request import MessagingRequest
 from src.messaging.domain.validators.contact_validator import (
@@ -25,7 +26,7 @@ async def send_message_use_case(
     file_id: int | None,
     current_user: BaseUser,
     uow: AsyncUnitOfWork,
-) -> MessageRequestDTO:
+) -> SendMessageDTO:
     # Get session to validate contact data matches messenger type
     session = await uow.session_repo.get_by_id(id=session_id)
     if session is None:
@@ -73,6 +74,10 @@ async def send_message_use_case(
         status=MessageStatus.pending,
     )
     msg = await uow.message_repo.add(entity=msg)
+    await uow.flush()
+    if msg.id is None:
+        raise BadRequestException("Message id is required")
+    message_id = int(msg.id)
 
     # enqueue outbox event for request-level sending
     outbox = OutboxService(uow)
@@ -90,4 +95,8 @@ async def send_message_use_case(
     if dto is None:
         raise NotFoundException(entity=MessagingRequest)
 
-    return dto
+    message_dto = await uow.messaging_queries.get_message_by_id(message_id=message_id)
+    if message_dto is None:
+        raise NotFoundException(entity=Message)
+
+    return SendMessageDTO(message=message_dto, message_request=dto)

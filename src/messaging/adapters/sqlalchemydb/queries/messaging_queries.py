@@ -198,3 +198,10 @@ class SqlalchemyMessagingQueries(AsyncSqlalchemyQueries, MessagingQueriesPort):
             )
         )
         return await self._one_tuple(stmt, self._map_session_row_to_dto)
+
+    async def get_message_by_id(self, *, message_id: int) -> MessageDTO | None:
+        stmt = select(MessageModel).where(
+            MessageModel.id == message_id,
+            MessageModel.deleted_at.is_(None),
+        )
+        return await self._one(stmt, self._to_message_dto)
