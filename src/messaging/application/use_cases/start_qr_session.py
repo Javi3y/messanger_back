@@ -102,17 +102,13 @@ async def start_qr_session_use_case(
 
     if session.id is None:
         raise BadRequestException(detail="Session id is required")
-    if qr_file.id is None:
-        raise BadRequestException(detail="File id is required")
 
-    session_dto = SessionDTO(
-        id=int(session.id),
-        title=session.title,
-        phone_number=session.phone_number,
-        session_type=session.session_type.value,
-        is_active=session.is_active,
-        user_id=session.user_id,
+    session_dto = await uow.messaging_queries.get_session_details(
+        session_id=int(session.id)
     )
+    if session_dto is None:
+        raise BadRequestException(detail="Session not found")
+
     file_dto = FileDTO.from_file(
         file=qr_file,
         user=user,

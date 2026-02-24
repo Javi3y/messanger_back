@@ -11,6 +11,8 @@ from src.messaging.adapters.sqlalchemydb.models.messaging_request import (
 
 from src.messaging.domain.dtos.message_dto import MessageDTO
 from src.messaging.domain.dtos.messaging_request_dto import MessageRequestDTO
+from src.messaging.domain.dtos.session_dto import SessionDTO
+from src.messaging.adapters.sqlalchemydb.models.session import SessionModel
 
 from src.users.adapters.sqlalchemydb.models.base_user import BaseUserModel
 from src.users.domain.dtos.user_dto import UserDTO
@@ -100,6 +102,19 @@ class SqlalchemyMessagingQueries(AsyncSqlalchemyQueries, MessagingQueriesPort):
             user_type=u.user_type,
         )
 
+    def _map_session_row_to_dto(
+        self, row: tuple[SessionModel, BaseUserModel]
+    ) -> SessionDTO:
+        session_model, user_model = row
+        return SessionDTO(
+            id=session_model.id,
+            title=session_model.title,
+            phone_number=session_model.phone_number,
+            session_type=session_model.session_type.value,
+            is_active=session_model.is_active,
+            user=self._to_user_dto(user_model),
+        )
+
     def _to_file_dto(self, f: FileModel) -> FileDTO:
         return FileDTO(
             id=f.id,
@@ -167,3 +182,19 @@ class SqlalchemyMessagingQueries(AsyncSqlalchemyQueries, MessagingQueriesPort):
         )
 
         return await self._all(stmt, self._to_message_dto)
+
+    async def get_session_details(self, *, session_id: int) -> SessionDTO | None:
+        stmt = (
+            select(SessionModel, BaseUserModel)
+            .select_from(SessionModel)
+            .join(
+                BaseUserModel,
+                (BaseUserModel.id == SessionModel.user_id)
+                & (BaseUserModel.deleted_at.is_(None)),
+            )
+            .where(
+                SessionModel.id == session_id,
+                SessionModel.deleted_at.is_(None),
+            )
+        )
+        return await self._one_tuple(stmt, self._map_session_row_to_dto)

@@ -8,6 +8,7 @@ from src.messaging.ports.messengers.capabilities.auth.password_2fa import (
 )
 from src.base.ports.unit_of_work import AsyncUnitOfWork
 from src.messaging.application.registry.messenger_registry import MessengerRegistry
+from src.messaging.domain.dtos.session_dto import SessionDTO
 from src.messaging.domain.entities.session import Session
 from src.users.domain.entities.base_user import BaseUser
 from src.base.exceptions import (
@@ -26,7 +27,7 @@ async def password_login_use_case(
     user: BaseUser,
     registry: MessengerRegistry,
     cache_repo: AbstractCacheRepository,
-) -> Session:
+) -> SessionDTO:
     session = await uow.session_repo.get_by_id(id=session_id)
     if session is None:
         raise NotFoundException(entity=Session)
@@ -52,5 +53,13 @@ async def password_login_use_case(
     session.is_active = messenger.is_valid
 
     updated_session = await uow.session_repo.update(entity=session)
+    if updated_session.id is None:
+        raise BadRequestException("Session id is required")
 
-    return updated_session
+    session_dto = await uow.messaging_queries.get_session_details(
+        session_id=int(updated_session.id)
+    )
+    if session_dto is None:
+        raise NotFoundException(entity=Session)
+
+    return session_dto

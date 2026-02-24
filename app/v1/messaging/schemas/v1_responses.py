@@ -5,6 +5,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, field_validator
 from app.v1.files.schemas.v1_responses import V1FileResponse
+from app.v1.users.schemas.v1_responses import V1BaseUserResponse
 from src.base.domain.dto import BaseDTO
 
 
@@ -21,12 +22,21 @@ class V1MessengerDescriptorResponse(BaseModel):
 class V1SessionResponse(BaseModel):
     """Session entity response."""
 
+    model_config = ConfigDict(from_attributes=True, arbitrary_types_allowed=True)
+
     id: int
     title: str
     phone_number: str | None = None
     session_type: str
     is_active: bool
-    user_id: int
+    user: V1BaseUserResponse
+
+    @field_validator("user", mode="before")
+    @classmethod
+    def convert_user_dto(cls, v):
+        if isinstance(v, BaseDTO):
+            return v.dump(exclude_none=True)
+        return v
 
 
 class V1StartOtpSessionResponse(BaseModel):

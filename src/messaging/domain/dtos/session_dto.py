@@ -1,4 +1,5 @@
 from src.base.domain.dto import BaseDTO
+from src.users.domain.dtos.user_dto import UserDTO
 
 
 class SessionDTO(BaseDTO):
@@ -10,11 +11,11 @@ class SessionDTO(BaseDTO):
         phone_number: str | None,
         session_type: str,
         is_active: bool,
-        user_id: int,
+        user: UserDTO,
     ):
         self.id = id
         self.title = title
         self.phone_number = phone_number
         self.session_type = session_type
         self.is_active = is_active
-        self.user_id = user_id
+        self.user = user
