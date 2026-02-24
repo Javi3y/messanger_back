@@ -66,5 +66,13 @@ class V1MessageRequestResponse(AbstractBaseModel):
 
 
 class V1SendMessageResponse(AbstractBaseModel):
-    message: V1MessageResponse
+    id: int
+    message_request_id: int
+    text: str
+    phone_number: str | None = None
+    username: str | None = None
+    sending_time: datetime | None = None
+    sent_time: datetime | None = None
+    status: MessageStatus
+    error_message: str | None = None
     message_request: V1MessageRequestResponse

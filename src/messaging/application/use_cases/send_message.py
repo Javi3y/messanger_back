@@ -6,7 +6,6 @@ from src.base.ports.unit_of_work import AsyncUnitOfWork
 from src.messaging.application.outbox.events.request_ready_to_send_v1 import (
     MessageRequestReadyToSendV1,
 )
-from src.messaging.domain.dtos.messaging_request_dto import MessageRequestDTO
 from src.messaging.domain.dtos.send_message_dto import SendMessageDTO
 from src.messaging.domain.entities.message import Message, MessageStatus
 from src.messaging.domain.entities.messaging_request import MessagingRequest
@@ -99,4 +98,7 @@ async def send_message_use_case(
     if message_dto is None:
         raise NotFoundException(entity=Message)
 
-    return SendMessageDTO(message=message_dto, message_request=dto)
+    return SendMessageDTO(
+        message_request=dto,
+        **message_dto.dump(),
+    )
