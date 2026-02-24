@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+from typing import cast
 from src.messaging.application.use_cases.otp_login import otp_login_use_case
 from src.messaging.application.use_cases.password_login import (
     password_login_use_case,
@@ -19,6 +20,7 @@ from app.v1.messaging.schemas import v1_requests as rqm
 from app.v1.messaging.schemas.v1_responses import (
     V1MessengerDescriptorResponse,
     V1StartOtpSessionResponse,
+    V1StartQrSessionResponse,
     V1SessionResponse,
 )
 from app.v1.users.deps.get_current_user import get_current_user
@@ -71,14 +73,14 @@ async def start_otp_session(
         return V1StartOtpSessionResponse(**res.dump())
 
 
-@router.post("/qr", response_model=dict)
+@router.post("/qr", response_model=V1StartQrSessionResponse)
 async def start_qr_session(
     request: rqm.V1StartQrSessionRequest,
     uow: AsyncUnitOfWork = Depends(get_uow),
     user: BaseUser = Depends(get_current_user),
     registry: MessengerRegistry = Depends(get_messenger_registry),
     file_service: FileServicePort = Depends(get_file_service),
-) -> dict:
+) -> V1StartQrSessionResponse:
     async with uow:
         res = await start_qr_session_use_case(
             title=request.title,
@@ -90,7 +92,7 @@ async def start_qr_session(
             file_service=file_service,
         )
         await uow.commit()
-        return res
+        return V1StartQrSessionResponse(**res.dump())
 
 
 @router.post("/verify/opt", response_model=V1SessionResponse)
@@ -115,9 +117,12 @@ async def verify_otp(
             cache_repo=cache_repo,
         )
         await uow.commit()
+        if session.id is None:
+            raise ValueError("Session id is required")
+        session_id = cast(int, session.id)
 
         return V1SessionResponse(
-            id=session.id,
+            id=session_id,
             title=session.title,
             phone_number=session.phone_number,
             session_type=session.session_type.value,
@@ -148,9 +153,12 @@ async def verify_password(
             cache_repo=cache_repo,
         )
         await uow.commit()
+        if session.id is None:
+            raise ValueError("Session id is required")
+        session_id = cast(int, session.id)
 
         return V1SessionResponse(
-            id=session.id,
+            id=session_id,
             title=session.title,
             phone_number=session.phone_number,
             session_type=session.session_type.value,

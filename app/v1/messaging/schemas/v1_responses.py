@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, field_validator
+from app.v1.files.schemas.v1_responses import V1FileResponse
 from src.base.domain.dto import BaseDTO
 
 
@@ -36,6 +37,11 @@ class V1StartOtpSessionResponse(BaseModel):
 class V1CreateMessageRequestImportResponse(BaseModel):
     message_request_id: int
     job_key: str
+
+
+class V1StartQrSessionResponse(BaseModel):
+    session: V1SessionResponse
+    file: V1FileResponse
 
 
 class V1QrCodeResponse(BaseModel):

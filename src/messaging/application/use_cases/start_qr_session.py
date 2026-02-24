@@ -8,9 +8,12 @@ import qrcode
 
 from src.base.exceptions import BadRequestException
 from src.base.ports.unit_of_work import AsyncUnitOfWork
+from src.files.domain.dtos.file_dto import FileDTO
 from src.files.domain.entities.file import File
 from src.files.ports.services.file_service import FileServicePort
 from src.messaging.application.registry.messenger_registry import MessengerRegistry
+from src.messaging.domain.dtos.session_dto import SessionDTO
+from src.messaging.domain.dtos.start_qr_session_dto import StartQrSessionDTO
 from src.messaging.domain.entities.session import Session
 from src.messaging.domain.enums.messenger_type import MessengerType
 from src.messaging.ports.messengers.capabilities.auth.qr import QrAuthPort
@@ -34,7 +37,7 @@ async def start_qr_session_use_case(
     user: BaseUser,
     registry: MessengerRegistry,
     file_service: FileServicePort,
-) -> dict:
+) -> StartQrSessionDTO:
     user_id = user.id
     if user_id is None:
         raise BadRequestException(detail="User id is required")
@@ -97,7 +100,26 @@ async def start_qr_session_use_case(
     )
     qr_file = await uow.file_repo.add(entity=qr_file)
 
-    return {
-        "session_id": session.id,
-        "file_id": qr_file.id,
-    }
+    if session.id is None:
+        raise BadRequestException(detail="Session id is required")
+    if qr_file.id is None:
+        raise BadRequestException(detail="File id is required")
+
+    session_dto = SessionDTO(
+        id=int(session.id),
+        title=session.title,
+        phone_number=session.phone_number,
+        session_type=session.session_type.value,
+        is_active=session.is_active,
+        user_id=session.user_id,
+    )
+    file_dto = FileDTO.from_file(
+        file=qr_file,
+        user=user,
+        download_url=file_service.build_download_url(uri=qr_file.uri),
+    )
+
+    return StartQrSessionDTO(
+        session=session_dto,
+        file=file_dto,
+    )
