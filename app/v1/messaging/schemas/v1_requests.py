@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import Field, ConfigDict
+from pydantic import ConfigDict
 
 from app.schemas.base import AbstractBaseModel
 from src.messaging.application.import_handlers.message_request_import_config import (
