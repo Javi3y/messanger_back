@@ -4,7 +4,10 @@ from dependency_injector.wiring import Provide, inject
 from app.deps.providers import get_uow
 from app.v1.messaging.schemas import v1_requests as rqm
 from app.v1.messaging.schemas import v1_responses as rsm
-from app.v1.messaging.schemas.v1_responses import V1MessageRequestResponse
+from app.v1.messaging.schemas.v1_responses import (
+    V1CreateMessageRequestImportResponse,
+    V1MessageRequestResponse,
+)
 from app.v1.users.deps.get_current_user import get_current_user
 from app.container import ApplicationContainer
 from src.base.exceptions import BadRequestException
@@ -64,7 +67,9 @@ async def get_message_request(
         return rsm.V1MessageRequestResponse(**dto.dump())
 
 
-@router.post("/message-requests/import")
+@router.post(
+    "/message-requests/import", response_model=V1CreateMessageRequestImportResponse
+)
 @inject
 async def create_message_request_import(
     request: rqm.V1ImportMessageRequest,
@@ -73,15 +78,12 @@ async def create_message_request_import(
     import_staging_repo: ImportStagingRepositoryPort = Depends(
         Provide[ApplicationContainer.import_staging_repo]
     ),
-):
-    if user.id is None:
-        raise BadRequestException(detail="User id is required")
-    current_user_id = int(user.id)
+) -> V1CreateMessageRequestImportResponse:
 
     async with uow:
-        result = await create_message_request_import_use_case(
+        dto = await create_message_request_import_use_case(
             uow=uow,
-            user_id=current_user_id,
+            user=user,
             session_id=request.session_id,
             file_id=request.file_id,
             title=request.title,
@@ -93,4 +95,4 @@ async def create_message_request_import(
             import_staging_repo=import_staging_repo,
         )
         await uow.commit()
-        return result
+        return V1CreateMessageRequestImportResponse(**dto.dump())

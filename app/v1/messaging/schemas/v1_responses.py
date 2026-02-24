@@ -33,6 +33,11 @@ class V1StartOtpSessionResponse(BaseModel):
     message: str
 
 
+class V1CreateMessageRequestImportResponse(BaseModel):
+    message_request_id: int
+    job_key: str
+
+
 class V1QrCodeResponse(BaseModel):
     """QR code response."""
 

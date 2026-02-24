@@ -3,18 +3,22 @@ from uuid import uuid4
 from typing import Any
 
 from src.base.application.services.outbox_service import OutboxService
-from src.base.exceptions import NotFoundException
+from src.base.exceptions import BadRequestException, NotFoundException
 from src.messaging.domain.entities.messaging_request import MessagingRequest
+from src.messaging.domain.dtos.create_message_request_import_dto import (
+    CreateMessageRequestImportDTO,
+)
 from src.importing.application.outbox.events.bulk_import_stage_v1 import (
     BulkImportStageV1,
 )
 from src.importing.domain.enums.import_status import ImportStatus
+from src.users.domain.entities.base_user import BaseUser
 
 
 async def create_message_request_import_use_case(
     *,
     uow,
-    user_id: int,
+    user: BaseUser,
     session_id: int,
     file_id: int,
     title: str | None,
@@ -24,7 +28,11 @@ async def create_message_request_import_use_case(
     import_config: dict[str, Any],
     ttl_seconds: int,
     import_staging_repo,
-) -> dict[str, Any]:
+) -> CreateMessageRequestImportDTO:
+    if user.id is None:
+        raise BadRequestException(detail="User id is required")
+    user_id = int(user.id)
+
     # validate session exists
     session = await uow.session_repo.get_by_id(id=session_id)
     if not session:
@@ -87,6 +95,11 @@ async def create_message_request_import_use_case(
             available_at=datetime.now(UTC),
         )
     )
-    await uow.commit()
 
-    return {"message_request_id": req.id, "job_key": job_key}
+    if req.id is None:
+        raise BadRequestException(detail="Message request id is required")
+
+    return CreateMessageRequestImportDTO(
+        message_request_id=int(req.id),
+        job_key=job_key,
+    )
