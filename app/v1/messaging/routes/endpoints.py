@@ -61,6 +61,7 @@ async def get_message_request(
     async with uow:
         dto = await get_message_request_use_case(
             message_request_id=message_request_id,
+            user=user,
             uow=uow,
         )
 
